@@ -1,23 +1,58 @@
-import React, { useState } from 'react';
-import classes from './App.module.scss'
-
-function App() {
-
-const [currentTodo, setCurrentTodo] = useState("")
-const [todos, setTodos] = useState([])
-
+import React, { useState } from 'react'
+const initialTodo = { text: '', id: '' }
+const App = () => {
+  const [todos, setTodos] = useState([])
+  const [current, setCurrent] = useState(initialTodo)
+  const [isEditing, setIsEditing] = useState(false)
+  const addTodoHandler = () => {
+    if (current.text && !isEditing) {
+      setTodos([...todos, { text: current.text, id: String(Math.random()) }])
+    }
+    if (current.text && isEditing) {
+      const { text, id } = current
+      const foundIndex = todos.findIndex(todo => todo.id === id)
+      const todosCopy = [...todos]
+      todosCopy[foundIndex].text = text
+      setTodos(todosCopy)
+      setIsEditing(false)
+    }
+    setCurrent(initialTodo)
+  }
+  const editHandler = todoToEdit => {
+    const current = todos.find(todo => todo.id === todoToEdit.id)
+    setCurrent(current)
+    setIsEditing(true)
+  }
+  const changeHandler = event =>
+    setCurrent({
+      id: current.id || String(Math.random()),
+      text: event.target.value
+    })
   return (
-    <div className={classes.container}>
-      <input type="text" placeholder="Write a task" onInput={event => setCurrentTodo(event.target.value)}/>
-      <button onClick={() => setTodos([...todos, { currentTodo, id: String(Math.random()) }])}>Add task</button>
-      <ul className={classes.tasklist}>
-            {todos.map(todo => (
-              <li key={todo.id}> {todo.currentTodo} <button onClick={() => setTodos(todos.filter(el => todo.id !== el.id))}>Delete</button>
-              </li>
-              ))}
+    <div>
+      <h1>Todo app</h1>
+      <div>
+        <input type='text' onChange={changeHandler} value={current.text} />
+        <button onClick={addTodoHandler}>
+          {isEditing ? 'Save' : 'Add new'}
+        </button>
+      </div>
+      <ul>
+        {todos.map(todo => {
+          return (
+            <li key={todo.id}>
+              {todo.text}
+              <button
+                onClick={() => setTodos(todos.filter(el => todo.id !== el.id))}
+              >
+                Delete
+              </button>
+              <button onClick={() => editHandler(todo)}>Edit</button>
+            </li>
+          )
+        })}
       </ul>
     </div>
-  );
+  )
 }
-
-export default App;
+export default App
